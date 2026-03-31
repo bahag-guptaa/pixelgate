@@ -5,6 +5,7 @@ import "dotenv/config";
 import userRouter from "./routes/UserRoutes.js";
 import authRouter from "./routes/AuthRoutes.js";
 import gameRouter from "./routes/gameRouter.js";
+import "./utils/database/relation.js";
 
 const app = express();
 app.use(express.json());
@@ -18,7 +19,8 @@ app.get("/", (req, res) => {
   res.send("Welcome to the PixelGate API!");
 });
 
-app.use("/api", userRouter, authRouter);
+app.use("/", authRouter);
+app.use("/api", userRouter);
 app.use("/api/games", gameRouter);
 
 app.listen(PORT, HOST, async () => {
