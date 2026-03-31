@@ -19075,7 +19075,5 @@
       }
     ]
   },
-  "nofollow_collections": [
-    "stores"
-  ]
+  "nofollow_collections": ["stores"]
 }
