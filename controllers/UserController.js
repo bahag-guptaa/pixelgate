@@ -55,3 +55,50 @@ export const updateUser = async (req, res) => {
     return res.status(500).json("Error updating user");
   }
 };
+
+export const addFavouriteGame = async (req, res) => {
+  const { gameId } = req.body;
+  const id = req.token;
+  try {
+    // add game id check
+    const user = await User.findByPk(id, {
+      attributes: { exclude: ["password"] },
+    });
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+    const verifyGame = user.favourites?.includes(Number(gameId));
+    if (verifyGame) {
+      return res.status(400).json("Game already in favorites");
+    }
+    user.favourites = [...(user.favourites || []), Number(gameId)];
+    await user.save();
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json("Error adding favorite game");
+  }
+};
+
+export const removeFavouriteGame = async (req, res) => {
+  const { gameId } = req.body;
+  const id = req.token;
+  try {
+    // add game id check
+    const user = await User.findByPk(id, {
+      attributes: { exclude: ["password"] },
+    });
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+    const verifyGame = user.favourites?.includes(Number(gameId));
+    if (!verifyGame) {
+      return res.status(400).json("Game not in favorites");
+    }
+    user.favourites = user.favourites.filter((id) => id !== Number(gameId));
+    await user.save();
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).json("Error removing favorite game");
+  }
+};
