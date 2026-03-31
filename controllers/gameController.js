@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { Op } from "sequelize";
 import { Game } from "../models/Game.js";
+import { Review } from "../models/Review.js";
+import User from "../models/User.js";
 
 const EXPLORE_ATTRIBUTES = ['id', 'name', 'released', 'background_image', 'rating', 'metacritic', 'platforms', 'genres', 'stores', 'esrb_rating', 'game_images'];
 
@@ -99,9 +101,9 @@ const fetchGameScreenshotsFromExternal = async (gameId) => {
 const fetchGameClipsFromExternal = async (gameId) => {
     const EXTERNAL_API_URL = process.env.EXTERNAL_API_URL || "https://api.rawg.io/api";
     try {
-    const response = await fetch(`${EXTERNAL_API_URL}/games/${gameId}/movies?key=${process.env.RAWG_API_KEY}`);
-    const clipsData = await response.json();
-    return clipsData.results?.map(clip => clip.data?.max) || [];
+        const response = await fetch(`${EXTERNAL_API_URL}/games/${gameId}/movies?key=${process.env.RAWG_API_KEY}`);
+        const clipsData = await response.json();
+        return clipsData.results?.map(clip => clip.data?.max) || [];
     } catch (error) {
         console.error(`Error fetching game clips for game ID ${gameId}:`, error);
         return [];
@@ -179,12 +181,24 @@ export const fetchGameDetailsPage = async (req, res) => {
             return res.status(400).json({ error: "Invalid game ID." });
         }
 
-        let game = await Game.findByPk(gameId);
+        let game = await Game.findByPk(gameId, {
+            include: [{ 
+                model: Review, 
+                as: 'reviews', 
+                attributes: ['id', 'rating', 'comment', 'createdAt', 'updatedAt'], 
+                include: [{ 
+                    model: User, 
+                    as: 'user', 
+                    attributes: ['nickname'] 
+                }] 
+            }]
+        });
 
         if (!game || !game.details_fetched) {
             const details = await fetchGameDetailsFromExternal(gameId);
             if (!game) {
                 game = await Game.create(details);
+                game.setDataValue('reviews', []);
             } else {
                 await game.update(details);
             }
