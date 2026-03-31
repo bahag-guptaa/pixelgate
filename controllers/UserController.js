@@ -40,7 +40,7 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { nickname, email, password } = req.body;
+  const { nickname, email, password, bio } = req.body;
   try {
     const user = await User.findByPk(id);
     if (!user) {
@@ -49,6 +49,7 @@ export const updateUser = async (req, res) => {
     user.nickname = nickname || user.nickname;
     user.email = email || user.email;
     user.password = password || user.password;
+    user.bio = bio || user.bio;
     await user.save();
     res.status(200).json(user);
   } catch (error) {
