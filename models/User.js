@@ -23,11 +23,6 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  favourites: {
-    type: DataTypes.ARRAY(DataTypes.INTEGER),
-    allowNull: false,
-    defaultValue: [],
-  },
 });
 
 export default User;

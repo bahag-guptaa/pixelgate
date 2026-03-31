@@ -19,7 +19,8 @@ app.get("/", (req, res) => {
   res.send("Welcome to the PixelGate API!");
 });
 
-app.use("/api", userRouter, authRouter);
+app.use("/", authRouter);
+app.use("/api", userRouter);
 app.use("/api/games", gameRouter);
 app.use("/api", reviewRouter);
 
