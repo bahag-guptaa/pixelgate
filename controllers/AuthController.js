@@ -8,8 +8,8 @@ export const registerNewUser = async (req, res) => {
     return res.status(400).json("Missing required fields");
   }
   try {
-    const verufyEmail = await User.findOne({ where: { email } });
-    if (verufyEmail) {
+    const verifyEmail = await User.findOne({ where: { email } });
+    if (verifyEmail) {
       return res.status(400).json("Email already in use");
     }
     const verifyNickname = await User.findOne({ where: { nickname } });
