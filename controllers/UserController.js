@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { Game } from "../models/Game.js";
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -28,12 +29,23 @@ export const createUser = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      attributes: { exclude: ["password"] },
+      include: {
+        model: Game,
+        as: "favouriteGames",
+        attributes: ["id", "name", "background_image"],
+        through: {
+          attributes: [],
+        },
+      },
+    });
     if (!user) {
       return res.status(404).json("User not found");
     }
     res.json(user);
   } catch (error) {
+    console.log(error);
     return res.status(500).json("Error fetching user");
   }
 };
@@ -61,19 +73,21 @@ export const addFavouriteGame = async (req, res) => {
   const { gameId } = req.body;
   const id = req.token;
   try {
-    // add game id check
+    const game = await Game.findByPk(gameId);
+    if (!game) {
+      return res.status(404).json("Game not found");
+    }
     const user = await User.findByPk(id, {
       attributes: { exclude: ["password"] },
     });
     if (!user) {
       return res.status(404).json("User not found");
     }
-    const verifyGame = user.favourites?.includes(Number(gameId));
-    if (verifyGame) {
+    const isFavourite = await user.hasFavouriteGame(game);
+    if (isFavourite) {
       return res.status(400).json("Game already in favorites");
     }
-    user.favourites = [...(user.favourites || []), Number(gameId)];
-    await user.save();
+    await user.addFavouriteGame(game);
     return res.status(200).json(user);
   } catch (error) {
     console.log(error);
@@ -85,21 +99,37 @@ export const removeFavouriteGame = async (req, res) => {
   const { gameId } = req.body;
   const id = req.token;
   try {
-    // add game id check
     const user = await User.findByPk(id, {
       attributes: { exclude: ["password"] },
     });
     if (!user) {
       return res.status(404).json("User not found");
     }
-    const verifyGame = user.favourites?.includes(Number(gameId));
-    if (!verifyGame) {
+    const game = await Game.findByPk(gameId);
+    if (!game) {
+      return res.status(404).json("Game not found");
+    }
+    const isFavourite = await user.hasFavouriteGame(game);
+    if (!isFavourite) {
       return res.status(400).json("Game not in favorites");
     }
-    user.favourites = user.favourites.filter((id) => id !== Number(gameId));
-    await user.save();
+    await user.removeFavouriteGame(game);
     return res.status(200).json(user);
   } catch (error) {
     return res.status(500).json("Error removing favorite game");
+  }
+};
+
+export const getFavouriteGames = async (req, res) => {
+  const id = req.token;
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+    const favouriteGames = await user.getFavouriteGames();
+    return res.status(200).json(favouriteGames);
+  } catch (error) {
+    return res.status(500).json("Error fetching favorite games");
   }
 };
