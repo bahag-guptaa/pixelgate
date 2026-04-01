@@ -24,12 +24,22 @@ app.use("/api", userRouter);
 app.use("/api/games", gameRouter);
 app.use("/api", reviewRouter);
 
-app.listen(PORT, HOST, async () => {
-  try {
-    await sequelize.sync({ alter: true });
-    console.log("Database synced successfully");
-    console.log(`Server is running on http://${HOST}:${PORT}`);
-  } catch (error) {
-    console.error("Error syncing database:", error);
-  }
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found." });
 });
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal server error." });
+});
+
+try {
+  await sequelize.sync({ alter: true });
+  console.log("Database synced successfully");
+  app.listen(PORT, HOST, () => {
+    console.log(`Server is running on http://${HOST}:${PORT}`);
+  });
+} catch (error) {
+  console.error("Error syncing database:", error);
+  process.exit(1);
+}

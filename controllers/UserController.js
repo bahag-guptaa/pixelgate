@@ -1,76 +1,81 @@
 import User from "../models/User.js";
 import { Game } from "../models/Game.js";
+import bcrypt from "bcrypt";
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.findAll();
-    if (users.length === 0) {
-      return res.status(404).json("No users found");
-    }
-    res.json(users);
-  } catch (error) {
-    return res.status(500).json("Error fetching users");
-  }
-};
+// export const getAllUsers = async (req, res) => {
+//   try {
+//     const users = await User.findAll();
+//     if (users.length === 0) {
+//       return res.status(404).json("No users found");
+//     }
+//     res.json(users);
+//   } catch (error) {
+//     return res.status(500).json("Error fetching users");
+//   }
+// };
 
-export const createUser = async (req, res) => {
-  const { nickname, email, password } = req.body;
-  if (!nickname || !email || !password) {
-    return res.status(400).json("Missing required fields");
-  }
-  try {
-    const newUser = await User.create({ nickname, email, password });
-    return res.status(201).json(newUser);
-  } catch (error) {
-    return res.status(500).json("Error creating user");
-  }
-};
+// export const createUser = async (req, res) => {
+//   const { nickname, email, password } = req.body;
+//   if (!nickname || !email || !password) {
+//     return res.status(400).json("Missing required fields");
+//   }
+//   try {
+//     const newUser = await User.create({ nickname, email, password });
+//     return res.status(201).json(newUser);
+//   } catch (error) {
+//     return res.status(500).json("Error creating user");
+//   }
+// };
 
-export const getUserById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user = await User.findByPk(id, {
-      attributes: { exclude: ["password"] },
-      include: {
-        model: Game,
-        as: "favouriteGames",
-        attributes: ["id", "name", "background_image"],
-        through: {
-          attributes: [],
-        },
-      },
-    });
-    if (!user) {
-      return res.status(404).json("User not found");
-    }
-    res.json(user);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json("Error fetching user");
-  }
-};
+// export const getUserById = async (req, res) => {
+//   try {
+//     const user = await User.findByPk(id, {
+//       attributes: { exclude: ["password"] },
+//       include: {
+//         model: Game,
+//         as: "favouriteGames",
+//         attributes: ["id", "name", "background_image"],
+//         through: {
+//           attributes: [],
+//         },
+//       },
+//     });
+//     if (!user) {
+//       return res.status(404).json("User not found");
+//     }
+//     res.json(user);
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json("Error fetching user");
+//   }
+// };
 
-export const updateUser = async (req, res) => {
-  const { id } = req.params;
-  const { nickname, email, password, bio } = req.body;
-  try {
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json("User not found");
-    }
-    user.nickname = nickname || user.nickname;
-    user.email = email || user.email;
-    user.password = password || user.password;
-    user.bio = bio || user.bio;
-    await user.save();
-    res.status(200).json(user);
-  } catch (error) {
-    return res.status(500).json("Error updating user");
-  }
-};
+// export const updateUser = async (req, res) => {
+//   const id = parseInt(req.params.id, 10);
+//   if (isNaN(id)) return res.status(400).json("Invalid user ID.");
+//   const { nickname, email, password, bio } = req.body;
+//   try {
+//     const user = await User.findByPk(id);
+//     if (!user) {
+//       return res.status(404).json("User not found");
+//     }
+//     user.nickname = nickname || user.nickname;
+//     user.email = email || user.email;
+//     if (password) {
+//       const salt = await bcrypt.genSalt(10);
+//       user.password = await bcrypt.hash(password, salt);
+//     }
+//     user.bio = bio || user.bio;
+//     await user.save();
+//     res.status(200).json(user);
+//   } catch (error) {
+//     return res.status(500).json("Error updating user");
+//   }
+// };
 
 export const addFavouriteGame = async (req, res) => {
-  const { gameId } = req.body;
+  const gameId = parseInt(req.body.gameId, 10);
+  if (isNaN(gameId)) return res.status(400).json("Invalid game ID.");
   const id = req.token;
   try {
     const game = await Game.findByPk(gameId);
@@ -96,7 +101,8 @@ export const addFavouriteGame = async (req, res) => {
 };
 
 export const removeFavouriteGame = async (req, res) => {
-  const { gameId } = req.body;
+  const gameId = parseInt(req.body.gameId, 10);
+  if (isNaN(gameId)) return res.status(400).json("Invalid game ID.");
   const id = req.token;
   try {
     const user = await User.findByPk(id, {

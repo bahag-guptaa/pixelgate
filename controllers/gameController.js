@@ -90,6 +90,9 @@ const fetchGameScreenshotsFromExternal = async (gameId) => {
     const EXTERNAL_API_URL = process.env.EXTERNAL_API_URL || "https://api.rawg.io/api";
     try {
         const response = await fetch(`${EXTERNAL_API_URL}/games/${gameId}/screenshots?key=${process.env.RAWG_API_KEY}`);
+        if (!response.ok) {
+            throw new Error(`External API error: ${response.statusText}`);
+        }
         const data = await response.json();
         return data.results?.filter(s => !s.hidden).map(s => s.image) || [];
     } catch (error) {
@@ -102,6 +105,9 @@ const fetchGameClipsFromExternal = async (gameId) => {
     const EXTERNAL_API_URL = process.env.EXTERNAL_API_URL || "https://api.rawg.io/api";
     try {
         const response = await fetch(`${EXTERNAL_API_URL}/games/${gameId}/movies?key=${process.env.RAWG_API_KEY}`);
+        if (!response.ok) {
+            throw new Error(`External API error: ${response.statusText}`);
+        }
         const clipsData = await response.json();
         return clipsData.results?.map(clip => clip.data?.max) || [];
     } catch (error) {
@@ -176,11 +182,8 @@ export const searchGames = async (req, res) => {
 
 export const fetchGameDetailsPage = async (req, res) => {
     try {
-        const gameId = parseInt(req.params.id);
-        if (isNaN(gameId)) {
-            return res.status(400).json({ error: "Invalid game ID." });
-        }
-
+        const gameId = parseInt(req.params.id, 10);
+        if (isNaN(gameId)) return res.status(400).json({ error: "Invalid game ID." });
         let game = await Game.findByPk(gameId, {
             include: [{ 
                 model: Review, 
