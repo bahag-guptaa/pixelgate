@@ -211,17 +211,21 @@ export const searchGames = async (req, res) => {
 
         await saveGamesToDatabase(data.results.map(mapGameFromList));
 
-        const results = data.results.map(game => ({
-            id: game.id,
-            name: game.name,
-            background_image: game.background_image,
-            rating: game.rating,
-            metacritic: game.metacritic,
-            released: game.released,
-            genres: game.genres?.map(g => g.name),
-            platforms: game.platforms?.map(p => p.platform.name),
-        }));
-
+        const results = data.results.reduce((filtered, game) => {
+            if (game.added !== 0) {
+                filtered.push({
+                    id: game.id,
+                    name: game.name,
+                    background_image: game.background_image,
+                    rating: game.rating,
+                    metacritic: game.metacritic,
+                    released: game.released,
+                    genres: game.genres?.map(g => g.name),
+                    platforms: game.platforms?.map(p => p.platform.name),
+                });
+            }
+            return filtered;
+        }, []);
         res.json({ count: data.count, results });
     } catch (error) {
         console.error("Error searching games:", error);
