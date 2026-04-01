@@ -3,7 +3,7 @@ import {
   // getAllUsers,
   // createUser,
   // updateUser,
-  getUserById,
+  // getUserById,
   addFavouriteGame,
   removeFavouriteGame,
   getFavouriteGames,

@@ -149,17 +149,61 @@ const fetchGameDetailsFromExternal = async (gameId) => {
     };
 };
 
-export const searchGames = async (req, res) => {
+export const fetchFilterOptions = async (req, res) => {
+    const EXTERNAL_API_URL = process.env.EXTERNAL_API_URL || "https://api.rawg.io/api";
+    const key = process.env.RAWG_API_KEY;
+
     try {
-        const query = req.query.q;
-        if (!query) {
-            return res.status(400).json({ error: "Search query is required. Use ?q=" });
+        const [platformsRes, genresRes, storesRes, developerRes] = await Promise.all([
+            fetch(`${EXTERNAL_API_URL}/platforms?key=${key}&page_size=50`),
+            fetch(`${EXTERNAL_API_URL}/genres?key=${key}&page_size=50`),
+            fetch(`${EXTERNAL_API_URL}/stores?key=${key}&page_size=50`),
+            fetch(`${EXTERNAL_API_URL}/developers?key=${key}&page_size=50`),
+        ]);
+
+        if (!platformsRes.ok || !genresRes.ok || !storesRes.ok || !developerRes.ok) {
+            throw new Error("Failed to fetch filter options from external API.");
         }
 
+        const [platformsData, genresData, storesData, developersData] = await Promise.all([
+            platformsRes.json(),
+            genresRes.json(),
+            storesRes.json(),
+            developerRes.json(),
+        ]);
+
+        res.json({
+            platforms: platformsData.results.map(p => ({ id: p.id, name: p.name, slug: p.slug })),
+            genres: genresData.results.map(g => ({ id: g.id, name: g.name, slug: g.slug })),
+            stores: storesData.results.map(s => ({ id: s.id, name: s.name, slug: s.slug })),
+            developers: developersData.results.map(d => ({ id: d.id, name: d.name, slug: d.slug })),
+        });
+    } catch (error) {
+        console.error("Error fetching filter options:", error);
+        res.status(500).json({ error: "An error occurred while fetching filter options." });
+    }
+};
+
+export const searchGames = async (req, res) => {
+    try {
         const EXTERNAL_API_URL = process.env.EXTERNAL_API_URL || "https://api.rawg.io/api";
-        const response = await fetch(
-            `${EXTERNAL_API_URL}/games?key=${process.env.RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=20`
-        );
+
+        const params = new URLSearchParams({
+            key: process.env.RAWG_API_KEY,
+            page_size: 20,
+        });
+
+        if (req.query.q)          params.set('search', req.query.q);
+        if (req.query.genres)     params.set('genres', req.query.genres);
+        if (req.query.platforms)  params.set('platforms', req.query.platforms);
+        if (req.query.metacritic) params.set('metacritic', req.query.metacritic);
+        if (req.query.dates)      params.set('dates', req.query.dates);
+        if (req.query.ordering)   params.set('ordering', req.query.ordering);
+        if (req.query.page)      params.set('page', req.query.page);
+        if (req.query.page_size)      params.set('page_size', req.query.page_size);
+
+
+        const response = await fetch(`${EXTERNAL_API_URL}/games?${params}`);
         if (!response.ok) {
             throw new Error(`External API error: ${response.statusText}`);
         }
@@ -171,6 +215,11 @@ export const searchGames = async (req, res) => {
             id: game.id,
             name: game.name,
             background_image: game.background_image,
+            rating: game.rating,
+            metacritic: game.metacritic,
+            released: game.released,
+            genres: game.genres?.map(g => g.name),
+            platforms: game.platforms?.map(p => p.platform.name),
         }));
 
         res.json({ count: data.count, results });
