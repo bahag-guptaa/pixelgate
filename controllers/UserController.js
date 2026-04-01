@@ -93,9 +93,10 @@ export const addFavouriteGame = async (req, res) => {
       return res.status(400).json("Game already in favorites");
     }
     await user.addFavouriteGame(game);
-    return res.status(200).json(user);
+    return res.status(200).json(game);
   } catch (error) {
     console.log(error);
+    console.log("Error adding favorite game:", error);
     return res.status(500).json("Error adding favorite game");
   }
 };
