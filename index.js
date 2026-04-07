@@ -34,7 +34,7 @@ app.use((err, req, res, next) => {
 });
 
 try {
-  await sequelize.sync({ alter: true });
+  await sequelize.sync();
   console.log("Database synced successfully");
   app.listen(PORT, HOST, () => {
     console.log(`Server is running on http://${HOST}:${PORT}`);
