@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || "localhost";
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to the PixelGate API!");
@@ -36,8 +36,8 @@ app.use((err, req, res, next) => {
 try {
   await sequelize.sync();
   console.log("Database synced successfully");
-  app.listen(PORT, HOST, () => {
-    console.log(`Server is running on http://${HOST}:${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
 } catch (error) {
   console.error("Error syncing database:", error);
