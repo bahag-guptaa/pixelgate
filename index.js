@@ -33,13 +33,19 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal server error." });
 });
 
-try {
-  await sequelize.sync();
-  console.log("Database synced successfully");
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-} catch (error) {
-  console.error("Error syncing database:", error);
-  process.exit(1);
-}
+
+const start = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("DB connected");
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Startup failed:", err);
+    process.exit(1);
+  }
+};
+
+start();

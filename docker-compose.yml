@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT}:3001"
+    env_file:
+      - .env.app
+    restart: always
+    depends_on:
+      - db  
+  db:
+    image: postgres:18-alpine
+    env_file:
+      - .env.db
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql.   # rudimentary way to create tables and seed data on container startup (mimicking migration)
+volumes:
+  db_data:
