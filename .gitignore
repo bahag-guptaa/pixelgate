@@ -27,3 +27,12 @@ temp/
 .DS_Store
 .vscode/
 .idea/
+
+# Terraform local state and secrets
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfplan
+terraform/crash.log

@@ -1,0 +1,23 @@
+project_id = "your-gcp-project-id"
+region     = "europe-west1"
+
+artifact_registry_repository = "pixelgate-api"
+image_name                   = "pixelgate-api"
+image_tag                    = "latest"
+github_actions_service_account_id = "pixelgate-github-actions"
+cloud_run_service_name       = "pixelgate-api-ayan"
+
+cloud_run_container_port        = 3000
+cloud_run_cpu                   = "1"
+cloud_run_memory                = "512Mi"
+
+cloud_sql_instance_name       = "pixelgate-db"
+cloud_sql_tier                = "db-f1-micro"
+cloud_sql_disk_size_gb        = 20
+cloud_sql_deletion_protection = true
+
+rawg_api_key = "replace-me"
+db_name      = "replace-me"
+db_user      = "replace-me"
+db_pass      = "replace-me"
+jwt_secret   = "replace-me"
