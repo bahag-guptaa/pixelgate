@@ -1,4 +1,36 @@
-node_modules/
+node_modules
+**/node_modules
+
+# Git and CI metadata
+.git
+.gitignore
+.github
+
+# Local environment and secrets
 .env
-delete/
 .env.*
+GCP_SA_KEY.json
+
+# Local development tooling and data
+docker-compose.yml
+cloud-sql-proxy
+delete
+**/delete
+*.sql
+
+# Logs and temporary files
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+coverage
+.nyc_output
+tmp
+temp
+
+# Editor and OS files
+.DS_Store
+.vscode
+.idea

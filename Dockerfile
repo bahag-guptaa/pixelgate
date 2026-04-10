@@ -2,12 +2,16 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+ENV NODE_ENV=production
 
-RUN npm ci
+COPY --chown=node:node package*.json ./
 
-COPY . .
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --chown=node:node . .
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+USER node
+
+CMD ["node", "index.js"]

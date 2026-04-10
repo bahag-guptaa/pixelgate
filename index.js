@@ -1,51 +1,38 @@
-import express from "express";
-import cors from "cors";
+import { fileURLToPath } from "node:url";
 import { sequelize } from "./utils/database/relation.js";
 import "dotenv/config";
-import userRouter from "./routes/UserRoutes.js";
-import authRouter from "./routes/AuthRoutes.js";
-import gameRouter from "./routes/gameRouter.js";
-import reviewRouter from "./routes/ReviewRoutes.js";
+import createApp from "./app.js";
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+const DEFAULT_PORT = 3000;
 
-const PORT = process.env.PORT || 3000;
-
-
-app.get("/", (req, res) => {
-  res.send("Welcome to the PixelGate API!");
-});
-
-app.use("/", authRouter);
-app.use("/api", userRouter);
-app.use("/api/games", gameRouter);
-app.use("/api", reviewRouter);
-
-app.use((req, res) => {
-  res.status(404).json({ error: "Route not found." });
-});
-
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: "Internal server error." });
-});
-
-
-const start = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log("DB connected");
-
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on ${PORT}`);
-    });
-  } catch (err) {
-    console.error("Startup failed:", err);
-    process.exit(1);
-  }
+const resolvePort = () => {
+  const parsedPort = Number.parseInt(process.env.PORT ?? `${DEFAULT_PORT}`, 10);
+  return Number.isNaN(parsedPort) ? DEFAULT_PORT : parsedPort;
 };
 
-start();
+export const app = createApp();
+
+export const startServer = async () => {
+  await sequelize.authenticate();
+  console.log("DB connected");
+
+  if (process.env.DB_SYNC_ON_START === "true") {
+    await sequelize.sync();
+    console.log("DB schema synchronized");
+  }
+
+  const port = resolvePort();
+
+  return app.listen(port, "0.0.0.0", () => {
+    console.log(`Server running on ${port}`);
+  });
+};
+
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isMainModule) {
+  startServer().catch((err) => {
+    console.error("Startup failed:", err);
+    process.exit(1);
+  });
+}
