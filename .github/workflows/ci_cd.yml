@@ -9,7 +9,7 @@ on:
 env:
   REGION: europe-west1
   REPO: pixelgate-api-ayan
-  IMAGE: pixelgate-api:latest
+  IMAGE: pixelgate-api
   SERVICE: pixelgate-api-ayan
   NODE_ENV: production
   DB_SYNC_ON_START: "true"
