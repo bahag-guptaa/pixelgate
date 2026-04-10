@@ -3,36 +3,21 @@ resource "google_service_account" "github_actions" {
   display_name = "PixelGate GitHub Actions deployer"
 }
 
-resource "google_project_iam_member" "artifact_registry_writer" {
+# Broad permissions for managing Cloud Run, Cloud SQL, Artifact Registry, Storage, etc.
+resource "google_project_iam_member" "editor" {
   project = var.project_id
-  role    = "roles/artifactregistry.writer"
+  role    = "roles/editor"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
 
-resource "google_project_iam_member" "run_admin" {
+# Required by Cloud Run deploy to impersonate the runtime service account
+resource "google_project_iam_member" "service_account_user" {
   project = var.project_id
-  role    = "roles/run.admin"
+  role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
 
-resource "google_project_iam_member" "storage_object_admin" {
-  project = var.project_id
-  role    = "roles/storage.objectAdmin"
-  member  = "serviceAccount:${google_service_account.github_actions.email}"
-}
-
-resource "google_project_iam_member" "cloudsql_admin" {
-  project = var.project_id
-  role    = "roles/cloudsql.admin"
-  member  = "serviceAccount:${google_service_account.github_actions.email}"
-}
-
-resource "google_project_iam_member" "service_account_admin" {
-  project = var.project_id
-  role    = "roles/iam.serviceAccountAdmin"
-  member  = "serviceAccount:${google_service_account.github_actions.email}"
-}
-
+# Required by Terraform to manage google_project_iam_member resources
 resource "google_project_iam_member" "project_iam_admin" {
   project = var.project_id
   role    = "roles/resourcemanager.projectIamAdmin"
