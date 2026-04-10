@@ -45,6 +45,15 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Ensure Artifact Registry repository exists
+        run: |
+          gcloud artifacts repositories describe ${{ env.REPO }} \
+            --location ${{ env.REGION }} >/dev/null 2>&1 || \
+          gcloud artifacts repositories create ${{ env.REPO }} \
+            --repository-format=docker \
+            --location=${{ env.REGION }} \
+            --description="Docker images for PixelGate API"
+
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
