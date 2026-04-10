@@ -14,3 +14,9 @@ resource "google_project_iam_member" "run_admin" {
   role    = "roles/run.admin"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
+
+resource "google_project_iam_member" "storage_object_admin" {
+  project = var.project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
